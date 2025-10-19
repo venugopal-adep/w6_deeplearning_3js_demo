@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gradient Descent Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        #container {
+            width: 1600px;
+            height: 900px;
+            background: #f0f0f5;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            cursor: crosshair;
+        }
+
+        .title {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .title h1 {
+            font-size: 42px;
+            font-weight: bold;
+            color: #282828;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 12px 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            margin-bottom: 10px;
+        }
+
+        .title h2 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #667eea;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 8px 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .instructions {
+            position: absolute;
+            top: 150px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            z-index: 10;
+            font-size: 15px;
+            line-height: 1.8;
+            color: #282828;
+            max-width: 300px;
+        }
+
+        .instructions h3 {
+            color: #667eea;
+            margin-bottom: 12px;
+            font-size: 18px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 8px;
+        }
+
+        .instructions div {
+            margin: 8px 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .instructions strong {
+            color: #667eea;
+            min-width: 120px;
+            display: inline-block;
+            font-weight: 700;
+        }
+
+        .info-panel {
+            position: absolute;
+            top: 150px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            z-index: 10;
+            min-width: 320px;
+        }
+
+        .info-panel h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 20px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 8px;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 12px 0;
+            font-size: 16px;
+            color: #282828;
+            padding: 8px;
+            background: rgba(102, 126, 234, 0.05);
+            border-radius: 8px;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .info-value {
+            font-weight: bold;
+            color: #3c5aa6;
+            font-family: 'Courier New', monospace;
+        }
+
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            z-index: 10;
+            display: flex;
+            gap: 15px;
+        }
+
+        .button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            min-width: 180px;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+
+        .button:active {
+            transform: translateY(0);
+        }
+
+        .button.active {
+            background: linear-gradient(135deg, #50c878 0%, #3da85d 100%);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .legend {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            z-index: 10;
+        }
+
+        .legend h3 {
+            color: #667eea;
+            margin-bottom: 12px;
+            font-size: 18px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 10px;
+            border: 2px solid #282828;
+        }
+
+        .status-banner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(102, 126, 234, 0.95);
+            color: white;
+            padding: 20px 40px;
+            border-radius: 15px;
+            font-size: 24px;
+            font-weight: bold;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            z-index: 5;
+            display: none;
+            pointer-events: none;
+        }
+
+        .status-banner.show {
+            display: block;
+            animation: fadeInOut 2s ease-in-out;
+        }
+
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+            50% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div class="title">
+            <h1>🌄 Gradient Descent Demo</h1>
+            <h2>Developed by: Venugopal Adep</h2>
+        </div>
+        
+        <div class="instructions">
+            <h3>🎮 Controls</h3>
+            <div><strong>Left/Right Arrow:</strong> Rotate view</div>
+            <div><strong>Spacebar:</strong> Toggle auto-run</div>
+            <div><strong>R:</strong> Random restart</div>
+            <div><strong>Click Surface:</strong> Set position</div>
+        </div>
+
+        <div class="info-panel">
+            <h3>📊 Statistics</h3>
+            <div class="info-item">
+                <span class="info-label">Iteration:</span>
+                <span class="info-value" id="iteration-value">0</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Current Pos:</span>
+                <span class="info-value" id="current-pos">0.00, 0.00</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Current Value:</span>
+                <span class="info-value" id="current-value">0.0000</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Best Pos:</span>
+                <span class="info-value" id="best-pos">0.00, 0.00</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Best Value:</span>
+                <span class="info-value" id="best-value">0.0000</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Restarts:</span>
+                <span class="info-value" id="restarts">0</span>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="button" id="auto-btn">▶️ Auto Mode: OFF</button>
+            <button class="button" id="restart-btn">🔄 Random Restart</button>
+        </div>
+
+        <div class="legend">
+            <h3>🎨 Legend</h3>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #0066ff;"></div>
+                <span>Current Position</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #ffd700;"></div>
+                <span>Best (Global Min)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #ff0000;"></div>
+                <span>Gradient Path</span>
+            </div>
+        </div>
+
+        <div class="status-banner" id="status-banner"></div>
+
+        <canvas id="canvas"></canvas>
+    </div>
+
+    <script src="gradient_descent_demo.js"></script>
+</body>
+</html>

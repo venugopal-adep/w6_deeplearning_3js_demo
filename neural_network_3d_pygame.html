@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Neural Network Propagation Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        #container {
+            width: 1600px;
+            height: 900px;
+            background: #f0f0f5;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .title {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 42px;
+            font-weight: bold;
+            color: #282828;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .instructions {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            z-index: 10;
+            font-size: 16px;
+            line-height: 1.8;
+            color: #282828;
+        }
+
+        .instructions div {
+            margin: 8px 0;
+        }
+
+        .instructions strong {
+            color: #667eea;
+            min-width: 30px;
+            display: inline-block;
+        }
+
+        .info-panel {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            z-index: 10;
+            min-width: 300px;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            font-size: 18px;
+            color: #282828;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .info-value {
+            font-weight: bold;
+            color: #3c5aa6;
+        }
+
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+
+        .button:active {
+            transform: translateY(0);
+        }
+
+        .button.active {
+            background: linear-gradient(135deg, #50c878 0%, #3da85d 100%);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .slider-container {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .slider-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #282828;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .slider {
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: linear-gradient(to right, #ddd, #667eea);
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            box-shadow: 0 3px 10px rgba(102, 126, 234, 0.5);
+        }
+
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            box-shadow: 0 3px 10px rgba(102, 126, 234, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div class="title">🧠 3D Neural Network Propagation Demo</div>
+        
+        <div class="instructions">
+            <div><strong>R:</strong> Reset weights and bias</div>
+            <div><strong>F:</strong> Forward propagation</div>
+            <div><strong>B:</strong> Backward propagation</div>
+            <div><strong>T:</strong> New random target</div>
+            <div><strong>Click inputs:</strong> Randomize values</div>
+        </div>
+
+        <div class="info-panel">
+            <div class="info-item">
+                <span class="info-label">Error:</span>
+                <span class="info-value" id="error-value">0.0000</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Target:</span>
+                <span class="info-value" id="target-value">0.0000</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Epoch:</span>
+                <span class="info-value" id="epoch-value">0</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Learning Rate:</span>
+                <span class="info-value" id="lr-value">0.100</span>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="button" id="auto-btn">Auto Mode: OFF</button>
+            <div class="slider-container">
+                <label class="slider-label">Learning Rate: <span id="slider-value">0.100</span></label>
+                <input type="range" min="0.001" max="1" step="0.001" value="0.1" class="slider" id="lr-slider">
+            </div>
+        </div>
+
+        <canvas id="canvas"></canvas>
+    </div>
+
+    <script src="neural_network_3d_pygame.js"></script>
+</body>
+</html>

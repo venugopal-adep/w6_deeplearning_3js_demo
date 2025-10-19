@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Activation Functions - Deep Learning</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow: hidden;
+            color: white;
+        }
+        
+        #container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+        
+        #canvas-container {
+            width: 100%;
+            height: 100%;
+        }
+        
+        #plot-2d {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(15px);
+            width: 450px;
+            height: 320px;
+            border: 2px solid rgba(79, 195, 247, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+        
+        #plot-2d canvas {
+            width: 100%;
+            height: 100%;
+            border-radius: 5px;
+        }
+        
+        .plot-title {
+            color: #4fc3f7;
+            font-size: 1em;
+            margin-bottom: 10px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        #controls {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.85);
+            padding: 25px;
+            border-radius: 20px;
+            backdrop-filter: blur(15px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            max-width: 280px;
+            z-index: 100;
+            border: 2px solid rgba(79, 195, 247, 0.3);
+        }
+        
+        #controls h2 {
+            margin-bottom: 20px;
+            font-size: 1.6em;
+            color: #fff;
+            text-align: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .control-group {
+            margin-bottom: 20px;
+        }
+        
+        .control-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+            color: #ddd;
+        }
+        
+        select, input[type="range"] {
+            width: 100%;
+            padding: 8px;
+            border-radius: 5px;
+            border: none;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1em;
+        }
+        
+        select {
+            cursor: pointer;
+        }
+        
+        select option {
+            background: #333;
+            color: white;
+        }
+        
+        input[type="range"] {
+            height: 6px;
+            padding: 0;
+            cursor: pointer;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .checkbox-group input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        
+        .value-display {
+            display: inline-block;
+            margin-left: 10px;
+            color: #4fc3f7;
+            font-weight: bold;
+        }
+        
+        #info {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 25px 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(15px);
+            max-width: 450px;
+            font-size: 1em;
+            line-height: 2;
+            border: 2px solid rgba(79, 195, 247, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+        
+        .info-title {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #4fc3f7 0%, #667eea 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: bold;
+        }
+        
+        .info-detail {
+            margin: 8px 0;
+            padding-left: 15px;
+        }
+        
+        .info-detail::before {
+            content: "•";
+            margin-left: -15px;
+            margin-right: 8px;
+            color: #4fc3f7;
+        }
+        
+        #legend {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(15px);
+            font-size: 0.95em;
+            border: 2px solid rgba(79, 195, 247, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+        
+        #comparison-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: none;
+            flex-direction: row;
+            gap: 20px;
+            z-index: 50;
+        }
+        
+        .function-card {
+            background: rgba(0, 0, 0, 0.9);
+            padding: 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(15px);
+            border: 2px solid rgba(79, 195, 247, 0.3);
+            width: 350px;
+            text-align: center;
+        }
+        
+        .function-card h3 {
+            color: #4fc3f7;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        .function-card canvas {
+            width: 100%;
+            height: 200px;
+            border-radius: 10px;
+        }
+        
+        .function-stats {
+            margin-top: 15px;
+            text-align: left;
+            font-size: 0.9em;
+            line-height: 1.8;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+        }
+        
+        .legend-color {
+            width: 30px;
+            height: 15px;
+            margin-right: 10px;
+            border-radius: 3px;
+        }
+        
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.5em;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 30px 50px;
+            border-radius: 15px;
+            display: none;
+        }
+        
+        .button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1em;
+            margin-top: 10px;
+            transition: transform 0.2s;
+        }
+        
+        .button:hover {
+            transform: scale(1.05);
+        }
+        
+        .button:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="canvas-container"></div>
+        
+        <div id="controls">
+            <h2>🧠 Activation Functions</h2>
+            
+            <div class="control-group">
+                <label>📊 Select Function:</label>
+                <select id="function-select">
+                    <option value="sigmoid">📈 Sigmoid</option>
+                    <option value="tanh">📉 Tanh</option>
+                    <option value="relu" selected>⚡ ReLU</option>
+                </select>
+            </div>
+            
+            <button class="button" id="view-all">🎯 View All Three</button>
+            
+            <div class="control-group">
+                <label>🎨 Resolution: <span class="value-display" id="resolution-value">60</span></label>
+                <input type="range" id="resolution-slider" min="30" max="100" step="5" value="60">
+            </div>
+            
+            <div class="control-group">
+                <label>💫 Animation Speed: <span class="value-display" id="speed-value">1.0</span>x</label>
+                <input type="range" id="speed-slider" min="0.5" max="3" step="0.1" value="1.0">
+            </div>
+            
+            <div class="control-group">
+                <div class="checkbox-group">
+                    <input type="checkbox" id="show-derivative">
+                    <label>📐 Show Derivative</label>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <div class="checkbox-group">
+                    <input type="checkbox" id="show-wireframe">
+                    <label>🕸️ Wireframe Mode</label>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <div class="checkbox-group">
+                    <input type="checkbox" id="show-particles">
+                    <label>✨ Particle Effects</label>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <div class="checkbox-group">
+                    <input type="checkbox" id="auto-rotate" checked>
+                    <label>🔄 Auto Rotate</label>
+                </div>
+            </div>
+            
+            <button class="button" id="reset-camera">🎥 Reset View</button>
+            <button class="button" id="toggle-comparison">🔀 Compare Mode</button>
+        </div>
+        
+        <div id="plot-2d">
+            <div class="plot-title">2D Function Plot</div>
+            <canvas id="plot-canvas"></canvas>
+        </div>
+        
+        <div id="comparison-container">
+            <div class="function-card">
+                <h3>📈 Sigmoid</h3>
+                <canvas id="sigmoid-canvas"></canvas>
+                <div class="function-stats">
+                    <div>📊 Range: 0 to 1</div>
+                    <div>🎯 Use: Binary classification</div>
+                    <div>⚡ Gives probabilities</div>
+                </div>
+            </div>
+            <div class="function-card">
+                <h3>📉 Tanh</h3>
+                <canvas id="tanh-canvas"></canvas>
+                <div class="function-stats">
+                    <div>📊 Range: -1 to 1</div>
+                    <div>🎯 Use: Hidden layers</div>
+                    <div>⚡ More steeper than sigmoid</div>
+                </div>
+            </div>
+            <div class="function-card">
+                <h3>⚡ ReLU</h3>
+                <canvas id="relu-canvas"></canvas>
+                <div class="function-stats">
+                    <div>📊 Range: 0 to ∞</div>
+                    <div>🎯 Use: Most hidden layers</div>
+                    <div>⚡ Less computationally expensive</div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="legend">
+            <div style="font-weight: bold; margin-bottom: 10px;">Color Scale:</div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #ff0000;"></div>
+                <span>High Output</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #ffff00;"></div>
+                <span>Medium</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #00ff00;"></div>
+                <span>Zero</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #00ffff;"></div>
+                <span>Medium</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #0000ff;"></div>
+                <span>Low Output</span>
+            </div>
+        </div>
+        
+        <div id="info">
+            <div id="function-info">
+                <div class="info-title">ReLU (Rectified Linear Unit)</div>
+                <div class="info-detail">Range: 0 to ∞</div>
+                <div class="info-detail">Less computationally expensive</div>
+                <div class="info-detail">Most popular for hidden layers</div>
+            </div>
+        </div>
+        
+        <div id="loading">Loading...</div>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="activation_functions_3d.js"></script>
+</body>
+</html>

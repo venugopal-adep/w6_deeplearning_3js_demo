@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Single Neuron (Perceptron) - Interactive 3D Demo</title>
+    <script src="https://cdn.plot.ly/plotly-2.26.0.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #2c3e50;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 2.5em;
+            font-weight: 700;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .header .subtitle {
+            font-size: 1.2em;
+            color: #7f8c8d;
+            font-weight: 400;
+        }
+
+        .demo-selector {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .demo-button {
+            padding: 15px 30px;
+            font-size: 1.1em;
+            font-weight: 600;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            backdrop-filter: blur(10px);
+        }
+
+        .demo-button.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .demo-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+            align-items: start;
+        }
+
+        .plot-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .plot-title {
+            font-size: 1.4em;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        #perceptronPlot, #neuronDiagram {
+            width: 100%;
+            height: 500px;
+        }
+
+        .controls-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            height: fit-content;
+            max-height: 100vh;
+            overflow-y: auto;
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+            padding: 12px;
+            background: rgba(248, 249, 250, 0.8);
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .control-group h3 {
+            font-size: 1em;
+            color: #2c3e50;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .control-item {
+            margin-bottom: 10px;
+        }
+
+        .control-item label {
+            display: block;
+            font-weight: 500;
+            color: #34495e;
+            margin-bottom: 4px;
+            font-size: 0.85em;
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            height: 6px;
+            border-radius: 3px;
+            background: #ecf0f1;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .value-display {
+            background: #667eea;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: 600;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        .action-button {
+            width: 100%;
+            padding: 10px;
+            margin: 6px 0;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .action-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .action-button:active {
+            transform: translateY(0);
+        }
+
+        .bottom-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .metrics-section, .explanation-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .metrics-section h3, .explanation-section h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .metric-item {
+            background: rgba(248, 249, 250, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            border-left: 4px solid #27ae60;
+        }
+
+        .metric-value {
+            font-size: 1.6em;
+            font-weight: 700;
+            color: #27ae60;
+            display: block;
+        }
+
+        .metric-label {
+            font-size: 0.85em;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+
+        .status-bar {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 12px 20px;
+            border-radius: 25px;
+            margin-top: 20px;
+            text-align: center;
+            font-weight: 500;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .neuron-visualization {
+            margin-top: 15px;
+            padding: 20px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 10px;
+            border: 2px solid #667eea;
+            text-align: center;
+        }
+
+        .neuron-equation {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 15px 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .weight-display {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            font-weight: 500;
+        }
+
+        .activation-function {
+            margin: 15px 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            border-left: 4px solid #e74c3c;
+        }
+
+        .concept-explanation {
+            line-height: 1.6;
+        }
+
+        .concept-explanation p {
+            margin-bottom: 10px;
+        }
+
+        .concept-explanation strong {
+            color: #2c3e50;
+        }
+
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            cursor: help;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: #2c3e50;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.8em;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Compact layout for controls */
+        .weights-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .activation-data-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .learning-actions {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 10px;
+            align-items: end;
+        }
+
+        .learning-rate-container {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .action-buttons-compact {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+
+        .action-buttons-compact .action-button {
+            padding: 8px;
+            font-size: 0.85em;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 1400px) {
+            .weights-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .activation-data-row {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .learning-actions {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .bottom-section {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .demo-selector {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .header h1 {
+                font-size: 2em;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header Section -->
+        <div class="header">
+            <h1>
+                <i class="fas fa-atom"></i>
+                Single Neuron (Perceptron)
+                <i class="fas fa-brain"></i>
+            </h1>
+            <p class="subtitle">Interactive 3D Visualization of the Fundamental Building Block of Neural Networks</p>
+            
+            <div class="demo-selector">
+                <button id="dataViewBtn" class="demo-button active">
+                    <i class="fas fa-cube"></i> 3D Data View
+                </button>
+                <button id="neuronViewBtn" class="demo-button">
+                    <i class="fas fa-project-diagram"></i> Neuron Structure
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Plot Section -->
+            <div class="plot-section">
+                <h2 id="plotTitle" class="plot-title">3D Perceptron Decision Boundary</h2>
+                <div id="perceptronPlot"></div>
+                <div id="neuronDiagram" style="display: none;"></div>
+                
+                <!-- Neuron Equation Display -->
+                <div class="neuron-visualization">
+                    <div class="neuron-equation" id="neuronEquation">
+                        Output = σ(w₁x₁ + w₂x₂ + w₃x₃ + b)
+                    </div>
+                    <div class="activation-function">
+                        <strong>Activation Function:</strong> <span id="activationDisplay">Step Function</span><br>
+                        <small id="activationFormula">σ(z) = 1 if z ≥ 0, else 0</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controls Section -->
+            <div class="controls-section">
+                <!-- Neuron Parameters -->
+                <div class="control-group">
+                    <h3><i class="fas fa-sliders-h"></i> Neuron Weights</h3>
+                    
+                    <div class="control-item">
+                        <label>
+                            Weight 1 (w₁)
+                            <span class="tooltip">
+                                <i class="fas fa-question-circle"></i>
+                                <span class="tooltiptext">Weight for first input feature (x₁). Positive values increase likelihood of activation.</span>
+                            </span>
+                        </label>
+                        <div class="slider-container">
+                            <input type="range" id="w1Slider" min="-5" max="5" value="1" step="0.1">
+                            <span id="w1Value" class="value-display">1.0</span>
+                        </div>
+                    </div>
+
+                    <div class="control-item">
+                        <label>
+                            Weight 2 (w₂)
+                            <span class="tooltip">
+                                <i class="fas fa-question-circle"></i>
+                                <span class="tooltiptext">Weight for second input feature (x₂). Controls influence of this feature.</span>
+                            </span>
+                        </label>
+                        <div class="slider-container">
+                            <input type="range" id="w2Slider" min="-5" max="5" value="1" step="0.1">
+                            <span id="w2Value" class="value-display">1.0</span>
+                        </div>
+                    </div>
+
+                    <div class="control-item">
+                        <label>
+                            Weight 3 (w₃)
+                            <span class="tooltip">
+                                <i class="fas fa-question-circle"></i>
+                                <span class="tooltiptext">Weight for third input feature (x₃). Determines feature importance.</span>
+                            </span>
+                        </label>
+                        <div class="slider-container">
+                            <input type="range" id="w3Slider" min="-5" max="5" value="1" step="0.1">
+                            <span id="w3Value" class="value-display">1.0</span>
+                        </div>
+                    </div>
+
+                    <div class="control-item">
+                        <label>
+                            Bias (b)
+                            <span class="tooltip">
+                                <i class="fas fa-question-circle"></i>
+                                <span class="tooltiptext">Bias term shifts the decision boundary. Positive bias makes activation easier.</span>
+                            </span>
+                        </label>
+                        <div class="slider-container">
+                            <input type="range" id="biasSlider" min="-3" max="3" value="0" step="0.1">
+                            <span id="biasValue" class="value-display">0.0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Activation Function -->
+                <div class="control-group">
+                    <h3><i class="fas fa-wave-square"></i> Activation Function</h3>
+                    
+                    <div class="control-item">
+                        <label>Function Type</label>
+                        <div class="slider-container">
+                            <input type="range" id="activationSlider" min="1" max="3" value="1" step="1">
+                            <span id="activationTypeValue" class="value-display">Step</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data Generation -->
+                <div class="control-group">
+                    <h3><i class="fas fa-database"></i> Data Generation</h3>
+                    
+                    <div class="control-item">
+                        <label>Number of Points</label>
+                        <div class="slider-container">
+                            <input type="range" id="numPointsSlider" min="50" max="200" value="100" step="10">
+                            <span id="numPointsValue" class="value-display">100</span>
+                        </div>
+                    </div>
+
+                    <div class="control-item">
+                        <label>Data Spread</label>
+                        <div class="slider-container">
+                            <input type="range" id="spreadSlider" min="1" max="5" value="2" step="0.5">
+                            <span id="spreadValue" class="value-display">2.0</span>
+                        </div>
+                    </div>
+
+                    <button id="generateDataBtn" class="action-button">
+                        <i class="fas fa-dice"></i> Generate Random Data
+                    </button>
+                </div>
+
+                <!-- Learning Demo -->
+                <div class="control-group">
+                    <h3><i class="fas fa-graduation-cap"></i> Learning Demo</h3>
+                    
+                    <div class="control-item">
+                        <label>Learning Rate</label>
+                        <div class="slider-container">
+                            <input type="range" id="learningRateSlider" min="0.01" max="1" value="0.1" step="0.01">
+                            <span id="learningRateValue" class="value-display">0.10</span>
+                        </div>
+                    </div>
+
+                    <button id="trainBtn" class="action-button">
+                        <i class="fas fa-play"></i> Train Perceptron
+                    </button>
+                    <button id="resetBtn" class="action-button">
+                        <i class="fas fa-undo"></i> Reset Weights
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Section -->
+        <div class="bottom-section">
+            <!-- Performance Metrics -->
+            <div class="metrics-section">
+                <h3><i class="fas fa-chart-line"></i> Neuron Metrics</h3>
+                <div class="metrics-grid">
+                    <div class="metric-item">
+                        <span id="accuracyMetric" class="metric-value">--</span>
+                        <div class="metric-label">Classification Accuracy</div>
+                    </div>
+                    <div class="metric-item">
+                        <span id="netInputMetric" class="metric-value">--</span>
+                        <div class="metric-label">Avg Net Input</div>
+                    </div>
+                    <div class="metric-item">
+                        <span id="positiveOutputs" class="metric-value">--</span>
+                        <div class="metric-label">Positive Outputs</div>
+                    </div>
+                    <div class="metric-item">
+                        <span id="weightsSum" class="metric-value">--</span>
+                        <div class="metric-label">Weights Sum</div>
+                    </div>
+                </div>
+
+                <div class="weight-display">
+                    <span>Current Weights:</span>
+                    <span id="currentWeights">[1.0, 1.0, 1.0, 0.0]</span>
+                </div>
+            </div>
+
+            <!-- Concept Explanation -->
+            <div class="explanation-section">
+                <h3><i class="fas fa-lightbulb"></i> Perceptron Concept</h3>
+                <div id="conceptExplanation" class="concept-explanation">
+                    <p><strong>Single Neuron:</strong> The perceptron is the simplest form of a neural network, consisting of just one neuron.</p>
+                    <p><strong>Linear Classification:</strong> It separates classes using a linear decision boundary (hyperplane in 3D).</p>
+                    <p><strong>Weighted Sum:</strong> Combines inputs using weights: net = w₁x₁ + w₂x₂ + w₃x₃ + b</p>
+                    <p><strong>Activation:</strong> Applies a function to the weighted sum to produce the final output.</p>
+                    <p><strong>Learning:</strong> Adjusts weights based on training examples using gradient descent.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <i class="fas fa-info-circle"></i>
+            <span id="statusMessage">Ready! Adjust weights to see how the decision boundary changes in 3D space.</span>
+        </div>
+    </div>
+
+    <script src="perceptron_3d_demo.js"></script>
+</body>
+</html>

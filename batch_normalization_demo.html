@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Avoid Overfitting : Batch Normalization</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow-x: hidden;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 48px;
+            color: white;
+            text-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            margin-bottom: 10px;
+        }
+
+        .header .subtitle {
+            font-size: 20px;
+            color: #a8d0ff;
+            font-weight: 500;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .model-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            position: relative;
+        }
+
+        .model-card.overfitting {
+            border-top: 5px solid #e74c3c;
+        }
+
+        .model-card.normalized {
+            border-top: 5px solid #2ecc71;
+        }
+
+        .model-title {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .model-card.overfitting .model-title {
+            color: #e74c3c;
+        }
+
+        .model-card.normalized .model-title {
+            color: #2ecc71;
+        }
+
+        .model-subtitle {
+            text-align: center;
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 25px;
+        }
+
+        .status-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .model-card.overfitting .status-badge {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        }
+
+        .model-card.normalized .status-badge {
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+        }
+
+        .canvas-container {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        canvas {
+            border-radius: 10px;
+            background: white;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .metric-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .metric-label {
+            font-size: 13px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .metric-value {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .metric-item.train .metric-value {
+            color: #3498db;
+        }
+
+        .metric-item.test .metric-value {
+            color: #e67e22;
+        }
+
+        .metric-item.epochs .metric-value {
+            color: #9b59b6;
+        }
+
+        .metric-item.status .metric-value {
+            color: #2ecc71;
+            font-size: 20px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .control-btn {
+            padding: 15px 35px;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+
+        .play-btn {
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+        }
+
+        .pause-btn {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+        }
+
+        .reset-btn {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        }
+
+        .control-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+
+        .info-panel {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .info-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #333;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .info-item {
+            padding: 20px;
+            border-radius: 12px;
+            background: #f8f9fa;
+        }
+
+        .info-item.problem {
+            border-left: 5px solid #e74c3c;
+        }
+
+        .info-item.solution {
+            border-left: 5px solid #2ecc71;
+        }
+
+        .info-item h3 {
+            font-size: 20px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-item.problem h3 {
+            color: #e74c3c;
+        }
+
+        .info-item.solution h3 {
+            color: #2ecc71;
+        }
+
+        .info-item ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .info-item li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+            font-size: 15px;
+            color: #555;
+        }
+
+        .info-item li:before {
+            content: "•";
+            position: absolute;
+            left: 5px;
+            font-size: 20px;
+        }
+
+        .info-item.problem li:before {
+            color: #e74c3c;
+        }
+
+        .info-item.solution li:before {
+            color: #2ecc71;
+        }
+
+        .emoji {
+            font-size: 24px;
+        }
+
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: white;
+            padding: 15px 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .speed-control label {
+            font-weight: bold;
+            color: #333;
+            font-size: 16px;
+        }
+
+        .speed-control input[type="range"] {
+            width: 200px;
+        }
+
+        .speed-value {
+            font-weight: bold;
+            color: #2ecc71;
+            font-size: 20px;
+            min-width: 50px;
+        }
+
+        .chart-legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 15px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .legend-line {
+            width: 40px;
+            height: 3px;
+            border-radius: 2px;
+        }
+
+        .legend-line.train {
+            background: #3498db;
+        }
+
+        .legend-line.test {
+            background: #e67e22;
+        }
+
+        .legend-line.target {
+            background: #95a5a6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧠 Avoid Overfitting : Batch Normalization</h1>
+            <p class="subtitle">Developed by: Venugopal Adep</p>
+        </div>
+
+        <div class="main-grid">
+            <!-- Without Batch Normalization -->
+            <div class="model-card overfitting">
+                <div class="status-badge">❌ OVERFITTING</div>
+                <h2 class="model-title">Without Batch Normalization</h2>
+                <p class="model-subtitle">Unstable gradients, memorizes noise</p>
+
+                <div class="canvas-container">
+                    <canvas id="overfitting-canvas" width="700" height="400"></canvas>
+                </div>
+
+                <div class="chart-legend">
+                    <div class="legend-item">
+                        <div class="legend-line train"></div>
+                        <span>Training Loss</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-line test"></div>
+                        <span>Test Loss</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-line target"></div>
+                        <span>Ideal Fit</span>
+                    </div>
+                </div>
+
+                <div class="metrics-grid">
+                    <div class="metric-item train">
+                        <div class="metric-label">Train Loss</div>
+                        <div class="metric-value" id="overfit-train-loss">0.00</div>
+                    </div>
+                    <div class="metric-item test">
+                        <div class="metric-label">Test Loss</div>
+                        <div class="metric-value" id="overfit-test-loss">0.00</div>
+                    </div>
+                    <div class="metric-item epochs">
+                        <div class="metric-label">Epoch</div>
+                        <div class="metric-value" id="overfit-epoch">0</div>
+                    </div>
+                    <div class="metric-item status">
+                        <div class="metric-label">Gap</div>
+                        <div class="metric-value" id="overfit-gap" style="color: #e74c3c;">0.00</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- With Batch Normalization -->
+            <div class="model-card normalized">
+                <div class="status-badge">✅ NORMALIZED</div>
+                <h2 class="model-title">With Batch Normalization</h2>
+                <p class="model-subtitle">Stable gradients, learns patterns</p>
+
+                <div class="canvas-container">
+                    <canvas id="normalized-canvas" width="700" height="400"></canvas>
+                </div>
+
+                <div class="chart-legend">
+                    <div class="legend-item">
+                        <div class="legend-line train"></div>
+                        <span>Training Loss</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-line test"></div>
+                        <span>Test Loss</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-line target"></div>
+                        <span>Ideal Fit</span>
+                    </div>
+                </div>
+
+                <div class="metrics-grid">
+                    <div class="metric-item train">
+                        <div class="metric-label">Train Loss</div>
+                        <div class="metric-value" id="norm-train-loss">0.00</div>
+                    </div>
+                    <div class="metric-item test">
+                        <div class="metric-label">Test Loss</div>
+                        <div class="metric-value" id="norm-test-loss">0.00</div>
+                    </div>
+                    <div class="metric-item epochs">
+                        <div class="metric-label">Epoch</div>
+                        <div class="metric-value" id="norm-epoch">0</div>
+                    </div>
+                    <div class="metric-item status">
+                        <div class="metric-label">Gap</div>
+                        <div class="metric-value" id="norm-gap" style="color: #2ecc71;">0.00</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="control-btn play-btn" id="play-btn">▶️ Start Training</button>
+            <button class="control-btn pause-btn" id="pause-btn">⏸️ Pause</button>
+            <button class="control-btn reset-btn" id="reset-btn">🔄 Reset</button>
+        </div>
+
+        <div class="speed-control">
+            <label>⚡ Training Speed:</label>
+            <input type="range" id="speed-slider" min="1" max="10" value="5" step="1">
+            <span class="speed-value" id="speed-value">5x</span>
+        </div>
+
+        <div class="info-panel">
+            <div class="info-title">📚 Understanding Batch Normalization</div>
+            <div class="info-grid">
+                <div class="info-item problem">
+                    <h3><span class="emoji">⚠️</span> Without Batch Norm</h3>
+                    <ul>
+                        <li>Internal covariate shift</li>
+                        <li>Unstable gradient flow</li>
+                        <li>Slow convergence</li>
+                        <li>Higher overfitting risk</li>
+                        <li>Sensitive to initialization</li>
+                    </ul>
+                </div>
+
+                <div class="info-item solution">
+                    <h3><span class="emoji">✨</span> With Batch Norm</h3>
+                    <ul>
+                        <li>Normalizes layer inputs (μ=0, σ=1)</li>
+                        <li>Stable gradient flow</li>
+                        <li>Faster convergence</li>
+                        <li>Reduces overfitting naturally</li>
+                        <li>Less sensitive to weights</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="batch_normalization_demo.js"></script>
+</body>
+</html>
