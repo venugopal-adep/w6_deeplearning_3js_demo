@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gradient Descent Explorer</title>
+    <script src="https://cdn.plot.ly/plotly-2.26.0.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 15px;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .header {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 3em;
+            font-weight: 800;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header .subtitle {
+            font-size: 1.1em;
+            color: #7f8c8d;
+            margin-top: 10px;
+        }
+
+        .header .author {
+            font-size: 1.2em;
+            color: #34495e;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .sidebar {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            height: fit-content;
+        }
+
+        .sidebar h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+        }
+
+        .control-group label {
+            display: block;
+            font-weight: 600;
+            color: #34495e;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+        }
+
+        .control-group input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ecf0f1;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .control-group input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .run-button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .run-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .tabs {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 10px;
+        }
+
+        .tab-button {
+            padding: 12px 25px;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            color: #7f8c8d;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tab-button.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .tab-button:hover:not(.active) {
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        #plotDiv {
+            width: 100%;
+            height: 650px;
+            margin-bottom: 15px;
+        }
+
+        .visualization-grid {
+            display: grid;
+            grid-template-columns: 1fr 450px;
+            gap: 20px;
+        }
+
+        .plot-section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .steps-section {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .steps-container {
+            background: rgba(248, 249, 250, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            height: 100%;
+            overflow-y: auto;
+            max-height: calc(650px + 200px);
+        }
+
+        .step-item {
+            padding: 12px;
+            margin: 8px 0;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            line-height: 1.6;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .step-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 10px rgba(102, 126, 234, 0.2);
+        }
+
+        .step-item.active {
+            border-left: 4px solid #27ae60;
+            background: rgba(39, 174, 96, 0.05);
+            animation: pulse 1s ease;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.02);
+            }
+        }
+
+        .formulas {
+            background: rgba(102, 126, 234, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 5px solid #667eea;
+        }
+
+        .formula-item {
+            margin: 10px 0;
+            font-size: 1em;
+            color: #2c3e50;
+        }
+
+        @media (max-width: 1200px) {
+            .visualization-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .steps-container {
+                max-height: 400px;
+            }
+
+            #plotDiv {
+                height: 500px;
+            }
+        }
+
+        .learning-section {
+            line-height: 1.8;
+            color: #2c3e50;
+        }
+
+        .learning-section h3 {
+            color: #667eea;
+            margin: 20px 0 10px 0;
+            font-size: 1.3em;
+        }
+
+        .learning-section ul {
+            margin-left: 20px;
+        }
+
+        .learning-section li {
+            margin: 10px 0;
+        }
+
+        .highlight-box {
+            background: rgba(102, 126, 234, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border-left: 5px solid #667eea;
+        }
+
+        .quiz-container {
+            margin-top: 20px;
+        }
+
+        .question-card {
+            background: rgba(248, 249, 250, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 5px solid #667eea;
+        }
+
+        .question-text {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        .option {
+            padding: 12px 15px;
+            margin: 8px 0;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .option:hover {
+            background: rgba(102, 126, 234, 0.1);
+            border-color: #667eea;
+        }
+
+        .option.selected {
+            background: rgba(102, 126, 234, 0.2);
+            border-color: #667eea;
+        }
+
+        .option.correct {
+            background: rgba(39, 174, 96, 0.2);
+            border-color: #27ae60;
+        }
+
+        .option.incorrect {
+            background: rgba(231, 76, 60, 0.2);
+            border-color: #e74c3c;
+        }
+
+        .check-button {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .check-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .explanation {
+            background: rgba(102, 126, 234, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .explanation.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .score-display {
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            margin-top: 20px;
+            font-size: 1.5em;
+            font-weight: 700;
+        }
+
+        .score-button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .score-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(39, 174, 96, 0.4);
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>📉 Gradient Descent Explorer 📉</h1>
+            <p class="author">Developed by: Venugopal Adep</p>
+            <p class="subtitle">Explore how gradient descent finds the minimum of f(x) = x²</p>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Sidebar Controls -->
+            <div class="sidebar">
+                <h3><i class="fas fa-sliders-h"></i> Controls</h3>
+                
+                <div class="control-group">
+                    <label for="xInit">Initial guess (x₀):</label>
+                    <input type="number" id="xInit" value="10" step="0.5">
+                </div>
+
+                <div class="control-group">
+                    <label for="learningRate">Learning rate (α):</label>
+                    <input type="number" id="learningRate" value="0.1" step="0.01" min="0.01" max="1">
+                </div>
+
+                <div class="control-group">
+                    <label for="iterations">Number of iterations:</label>
+                    <input type="number" id="iterations" value="10" min="1" max="100" step="1">
+                </div>
+
+                <button class="run-button" onclick="runGradientDescent()">
+                    <i class="fas fa-play"></i>
+                    Run Gradient Descent
+                </button>
+            </div>
+
+            <!-- Tabs Content -->
+            <div class="tabs">
+                <!-- Tab Buttons -->
+                <div class="tab-buttons">
+                    <button class="tab-button active" onclick="switchTab('visualization')">
+                        <i class="fas fa-chart-line"></i> Visualization
+                    </button>
+                    <button class="tab-button" onclick="switchTab('learning')">
+                        <i class="fas fa-book"></i> Learning Center
+                    </button>
+                    <button class="tab-button" onclick="switchTab('quiz')">
+                        <i class="fas fa-graduation-cap"></i> Quiz
+                    </button>
+                </div>
+
+                <!-- Visualization Tab -->
+                <div id="visualization" class="tab-content active">
+                    <div class="visualization-grid">
+                        <div class="plot-section">
+                            <div id="plotDiv"></div>
+                            
+                            <div class="formulas">
+                                <h3 style="margin-bottom: 15px; color: #2c3e50;">
+                                    <i class="fas fa-calculator"></i> Formulas Used
+                                </h3>
+                                <div class="formula-item">
+                                    <strong>Objective Function:</strong> f(x) = x²
+                                </div>
+                                <div class="formula-item">
+                                    <strong>Gradient:</strong> f'(x) = 2x
+                                </div>
+                                <div class="formula-item">
+                                    <strong>Update Rule:</strong> x<sub>new</sub> = x<sub>old</sub> - α · f'(x<sub>old</sub>)
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="steps-section">
+                            <div class="steps-container" id="stepsContainer">
+                                <h3 style="margin-bottom: 15px; color: #2c3e50;">
+                                    <i class="fas fa-list"></i> Gradient Descent Steps
+                                </h3>
+                                <p style="color: #7f8c8d;">Click "Run Gradient Descent" to see the steps...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Learning Center Tab -->
+                <div id="learning" class="tab-content">
+                    <div class="learning-section">
+                        <h2 style="color: #667eea; margin-bottom: 20px;">
+                            <i class="fas fa-lightbulb"></i> Gradient Descent Explained
+                        </h2>
+                        
+                        <p>
+                            Gradient Descent is an optimization algorithm used to find the minimum of a function. 
+                            In this demo, we're minimizing the quadratic function <strong>f(x) = x²</strong>.
+                        </p>
+
+                        <h3><i class="fas fa-star"></i> Key Concepts:</h3>
+                        <ul>
+                            <li><strong>Objective Function:</strong> f(x) = x². This is the function we want to minimize.</li>
+                            <li><strong>Gradient:</strong> f'(x) = 2x. This is the derivative of our objective function.</li>
+                            <li><strong>Learning Rate (α):</strong> Determines the size of steps we take in each iteration.</li>
+                            <li><strong>Update Rule:</strong> x<sub>new</sub> = x<sub>old</sub> - α · f'(x<sub>old</sub>). 
+                                This is how we update our position in each iteration.</li>
+                        </ul>
+
+                        <h3><i class="fas fa-cogs"></i> How it works:</h3>
+                        <ol>
+                            <li>Start at an initial point (x<sub>init</sub>).</li>
+                            <li>Calculate the gradient at that point.</li>
+                            <li>Move in the opposite direction of the gradient (because we're minimizing).</li>
+                            <li>Repeat steps 2-3 for a set number of iterations.</li>
+                        </ol>
+
+                        <div class="highlight-box">
+                            <h3><i class="fas fa-chart-area"></i> Interpretation:</h3>
+                            <ul>
+                                <li>The <strong>blue curve</strong> represents our objective function f(x) = x².</li>
+                                <li>The <strong>red dots</strong> show the path of gradient descent.</li>
+                                <li>Watch how the algorithm converges towards the minimum (x = 0) as iterations increase.</li>
+                            </ul>
+                        </div>
+
+                        <h3><i class="fas fa-flask"></i> Experiment:</h3>
+                        <p>
+                            Try different initial points, learning rates, and iterations to see how they affect the optimization process!
+                        </p>
+                        
+                        <div class="highlight-box">
+                            <strong>Tips:</strong>
+                            <ul>
+                                <li>A <strong>small learning rate</strong> (e.g., 0.01) makes slow but steady progress.</li>
+                                <li>A <strong>large learning rate</strong> (e.g., 0.9) may overshoot or oscillate.</li>
+                                <li>Starting <strong>far from zero</strong> requires more iterations to converge.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quiz Tab -->
+                <div id="quiz" class="tab-content">
+                    <h2 style="color: #667eea; margin-bottom: 20px;">
+                        <i class="fas fa-brain"></i> Test Your Knowledge
+                    </h2>
+                    
+                    <div class="quiz-container" id="quizContainer"></div>
+                    
+                    <button class="score-button" onclick="showFinalScore()">
+                        <i class="fas fa-trophy"></i> Show Final Score
+                    </button>
+                    
+                    <div id="scoreDisplay"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="gradient_descent_explorer.js"></script>
+</body>
+</html>

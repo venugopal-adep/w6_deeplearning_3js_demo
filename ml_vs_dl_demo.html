@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Machine Learning vs Deep Learning - Interactive Demo</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #2c3e50;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 3em;
+            font-weight: 800;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header .subtitle {
+            font-size: 1.2em;
+            color: #7f8c8d;
+            margin-bottom: 8px;
+        }
+
+        .header .author {
+            font-size: 1.1em;
+            color: #34495e;
+            font-weight: 600;
+        }
+
+        .comparison-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+
+        .ml-card, .dl-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .ml-card {
+            border-top: 5px solid #3498db;
+        }
+
+        .dl-card {
+            border-top: 5px solid #e74c3c;
+        }
+
+        .ml-card:hover, .dl-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .card-icon {
+            font-size: 2.5em;
+        }
+
+        .ml-card .card-icon {
+            color: #3498db;
+        }
+
+        .dl-card .card-icon {
+            color: #e74c3c;
+        }
+
+        .card-title {
+            font-size: 2em;
+            font-weight: 700;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            padding: 10px;
+            margin: 8px 0;
+            background: rgba(248, 249, 250, 0.8);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .feature-list li:hover {
+            transform: translateX(5px);
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .feature-list i {
+            font-size: 1.8em;
+            min-width: 35px;
+        }
+
+        .ml-card .feature-list i {
+            color: #3498db;
+        }
+
+        .dl-card .feature-list i {
+            color: #e74c3c;
+        }
+
+        .visual-icon-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .visual-icon-item {
+            background: rgba(248, 249, 250, 0.8);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .visual-icon-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .visual-icon-item i {
+            font-size: 3em;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .visual-icon-item .label {
+            font-size: 0.85em;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .ml-card .visual-icon-item i {
+            color: #3498db;
+        }
+
+        .dl-card .visual-icon-item i {
+            color: #e74c3c;
+        }
+
+        .interactive-demo {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .demo-title {
+            font-size: 1.8em;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #2c3e50;
+        }
+
+        .slider-container {
+            margin: 30px 0;
+        }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        .slider-value {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: #ecf0f1;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            cursor: pointer;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .visualization-area {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .viz-card {
+            background: rgba(248, 249, 250, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .viz-title {
+            font-weight: 700;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #ecf0f1;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 10px 0;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        .ml-progress {
+            background: linear-gradient(90deg, #3498db 0%, #5dade2 100%);
+        }
+
+        .dl-progress {
+            background: linear-gradient(90deg, #e74c3c 0%, #ec7063 100%);
+        }
+
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .metric-box {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s ease;
+        }
+
+        .metric-box:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .metric-value {
+            font-size: 2.5em;
+            font-weight: 700;
+            color: #667eea;
+            display: block;
+        }
+
+        .metric-label {
+            font-size: 0.9em;
+            color: #7f8c8d;
+            margin-top: 5px;
+            font-weight: 600;
+        }
+
+        .performance-chart-container {
+            background: rgba(248, 249, 250, 0.8);
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+
+        .chart-canvas {
+            width: 100%;
+            height: 300px;
+            position: relative;
+        }
+
+        .chart-legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 15px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.95em;
+            font-weight: 600;
+        }
+
+        .legend-line {
+            width: 40px;
+            height: 4px;
+            border-radius: 2px;
+        }
+
+        .comparison-table {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .visual-comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .comparison-chart {
+            background: rgba(248, 249, 250, 0.8);
+            padding: 20px;
+            border-radius: 12px;
+        }
+
+        .chart-title {
+            font-size: 1.1em;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #2c3e50;
+            text-align: center;
+        }
+
+        .bar-comparison {
+            display: flex;
+            align-items: center;
+            margin: 15px 0;
+        }
+
+        .bar-label {
+            min-width: 80px;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        .bar-visual {
+            flex: 1;
+            height: 30px;
+            border-radius: 15px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            color: white;
+            font-weight: 600;
+            font-size: 0.85em;
+        }
+
+        .ml-bar {
+            background: linear-gradient(90deg, #3498db 0%, #5dade2 100%);
+        }
+
+        .dl-bar {
+            background: linear-gradient(90deg, #e74c3c 0%, #ec7063 100%);
+        }
+
+        .use-cases {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+
+        .use-case-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .use-case-title {
+            font-size: 1.5em;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .use-case-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .use-case-item {
+            background: rgba(248, 249, 250, 0.8);
+            padding: 15px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-align: center;
+            min-height: 100px;
+        }
+
+        .use-case-item:hover {
+            transform: translateY(-5px);
+            background: rgba(102, 126, 234, 0.15);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .use-case-item i {
+            font-size: 2.5em;
+        }
+
+        .use-case-item span {
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .architecture-viz {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .arch-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .arch-diagram {
+            background: rgba(248, 249, 250, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .flow-step {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin: 8px 0;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            font-weight: 600;
+            text-align: center;
+            position: relative;
+            animation: fadeIn 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 0.95em;
+        }
+
+        .flow-step i {
+            font-size: 1.5em;
+        }
+
+        .flow-arrow {
+            font-size: 2em;
+            color: #667eea;
+            margin: 0;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .demo-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .demo-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        @media (max-width: 1024px) {
+            .comparison-section,
+            .visualization-area,
+            .use-cases,
+            .arch-container {
+                grid-template-columns: 1fr;
+            }
+
+            .metric-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .use-case-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>
+                <i class="fas fa-brain"></i>
+                Machine Learning vs Deep Learning
+                <i class="fas fa-network-wired"></i>
+            </h1>
+            <p class="subtitle">Interactive Comparison & Visualization Demo</p>
+            <p class="author">Developed by: Venugopal Adep</p>
+        </div>
+
+        <!-- Main Comparison Cards -->
+        <div class="comparison-section">
+            <!-- Machine Learning Card -->
+            <div class="ml-card">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <div class="card-title">Machine Learning</div>
+                </div>
+                <div class="visual-icon-grid">
+                    <div class="visual-icon-item">
+                        <i class="fas fa-hand-paper"></i>
+                        <div class="label">Manual Features</div>
+                    </div>
+                    <div class="visual-icon-item">
+                        <i class="fas fa-database"></i>
+                        <div class="label">Small Data</div>
+                    </div>
+                    <div class="visual-icon-item">
+                        <i class="fas fa-microchip"></i>
+                        <div class="label">CPU Friendly</div>
+                    </div>
+                    <div class="visual-icon-item">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <div class="label">Fast Training</div>
+                    </div>
+                    <div class="visual-icon-item">
+                        <i class="fas fa-eye"></i>
+                        <div class="label">Interpretable</div>
+                    </div>
+                    <div class="visual-icon-item">
+                        <i class="fas fa-table"></i>
+                        <div class="label">Tabular Data</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Deep Learning Card -->
+            <div class="dl-card">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="fas fa-network-wired"></i>
+                    </div>
+                    <div class="card-title">Deep Learning</div>
+                </div>
+                <div class="visual-icon-grid">
+                    <div class="visual-icon-item">
+                        <i class="fas fa-robot"></i>
+                        <div class="label">Auto Features</div>
+                    </div>
+                    <div class="visual-icon-item">
+                        <i class="fas fa-server"></i>
+                        <div class="label">Big Data</div>
+                    </div>
+                    <div class="visual-icon-item">
+                        <i class="fas fa-bolt"></i>
+                        <div class="label">GPU Required</div>
+                    </div>
+                    <div class="visual-icon-item">
+                        <i class="fas fa-clock"></i>
+                        <div class="label">Slow Training</div>
+                    </div>
+                    <div class="visual-icon-item">
+                        <i class="fas fa-box"></i>
+                        <div class="label">Black Box</div>
+                    </div>
+                    <div class="visual-icon-item">
+                        <i class="fas fa-image"></i>
+                        <div class="label">Images/Video</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Interactive Sliders Demo -->
+        <div class="interactive-demo">
+            <h2 class="demo-title">
+                <i class="fas fa-sliders-h"></i>
+                Interactive Comparison - Adjust Dataset Size
+            </h2>
+
+            <div class="slider-container">
+                <div class="slider-label">
+                    <span>Dataset Size (Number of Samples)</span>
+                    <span class="slider-value" id="datasetSize">10,000</span>
+                </div>
+                <input type="range" id="datasetSlider" min="100" max="1000000" value="10000" step="100">
+            </div>
+
+            <div class="visualization-area">
+                <div class="viz-card">
+                    <div class="viz-title" style="color: #3498db;">
+                        <i class="fas fa-brain"></i> Machine Learning Performance
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill ml-progress" id="mlPerformance">
+                            <span id="mlPercent">0%</span>
+                        </div>
+                    </div>
+                    <p style="margin-top: 10px; color: #7f8c8d; font-size: 0.9em;">
+                        Training Time: <strong id="mlTime">Fast</strong>
+                    </p>
+                </div>
+
+                <div class="viz-card">
+                    <div class="viz-title" style="color: #e74c3c;">
+                        <i class="fas fa-network-wired"></i> Deep Learning Performance
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill dl-progress" id="dlPerformance">
+                            <span id="dlPercent">0%</span>
+                        </div>
+                    </div>
+                    <p style="margin-top: 10px; color: #7f8c8d; font-size: 0.9em;">
+                        Training Time: <strong id="dlTime">Slow</strong>
+                    </p>
+                </div>
+            </div>
+
+            <div class="metric-grid">
+                <div class="metric-box">
+                    <span class="metric-value" id="computeCost">💰</span>
+                    <div class="metric-label" id="computeCostLabel">Low Cost</div>
+                </div>
+                <div class="metric-box">
+                    <span class="metric-value" id="featureEngineering">🛠️</span>
+                    <div class="metric-label" id="featureLabel">High Manual Work</div>
+                </div>
+                <div class="metric-box">
+                    <span class="metric-value" id="recommendation">🎯</span>
+                    <div class="metric-label" id="recommendationLabel">Recommended: ML</div>
+                </div>
+            </div>
+
+            <div class="performance-chart-container">
+                <div class="chart-title">📈 Performance vs Dataset Size</div>
+                <canvas id="performanceChart" class="chart-canvas"></canvas>
+                <div class="chart-legend">
+                    <div class="legend-item">
+                        <div class="legend-line" style="background: #3498db;"></div>
+                        <span>Machine Learning</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-line" style="background: #e74c3c;"></div>
+                        <span>Deep Learning</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Comparison Table -->
+        <div class="comparison-table">
+            <h2 class="demo-title">
+                <i class="fas fa-chart-bar"></i>
+                Visual Comparison
+            </h2>
+            <div class="visual-comparison-grid">
+                <div class="comparison-chart">
+                    <div class="chart-title">📊 Data Requirements</div>
+                    <div class="bar-comparison">
+                        <div class="bar-label">ML</div>
+                        <div class="bar-visual ml-bar" style="width: 30%;">Small</div>
+                    </div>
+                    <div class="bar-comparison">
+                        <div class="bar-label">DL</div>
+                        <div class="bar-visual dl-bar" style="width: 95%;">Very Large</div>
+                    </div>
+                </div>
+
+                <div class="comparison-chart">
+                    <div class="chart-title">⚡ Training Speed</div>
+                    <div class="bar-comparison">
+                        <div class="bar-label">ML</div>
+                        <div class="bar-visual ml-bar" style="width: 85%;">Fast</div>
+                    </div>
+                    <div class="bar-comparison">
+                        <div class="bar-label">DL</div>
+                        <div class="bar-visual dl-bar" style="width: 35%;">Slow</div>
+                    </div>
+                </div>
+
+                <div class="comparison-chart">
+                    <div class="chart-title">💰 Cost</div>
+                    <div class="bar-comparison">
+                        <div class="bar-label">ML</div>
+                        <div class="bar-visual ml-bar" style="width: 25%;">Low</div>
+                    </div>
+                    <div class="bar-comparison">
+                        <div class="bar-label">DL</div>
+                        <div class="bar-visual dl-bar" style="width: 85%;">High</div>
+                    </div>
+                </div>
+
+                <div class="comparison-chart">
+                    <div class="chart-title">🔍 Interpretability</div>
+                    <div class="bar-comparison">
+                        <div class="bar-label">ML</div>
+                        <div class="bar-visual ml-bar" style="width: 90%;">High</div>
+                    </div>
+                    <div class="bar-comparison">
+                        <div class="bar-label">DL</div>
+                        <div class="bar-visual dl-bar" style="width: 20%;">Low</div>
+                    </div>
+                </div>
+
+                <div class="comparison-chart">
+                    <div class="chart-title">🎯 Accuracy (Big Data)</div>
+                    <div class="bar-comparison">
+                        <div class="bar-label">ML</div>
+                        <div class="bar-visual ml-bar" style="width: 70%;">Good</div>
+                    </div>
+                    <div class="bar-comparison">
+                        <div class="bar-label">DL</div>
+                        <div class="bar-visual dl-bar" style="width: 95%;">Excellent</div>
+                    </div>
+                </div>
+
+                <div class="comparison-chart">
+                    <div class="chart-title">🛠️ Feature Engineering</div>
+                    <div class="bar-comparison">
+                        <div class="bar-label">ML</div>
+                        <div class="bar-visual ml-bar" style="width: 90%;">Manual</div>
+                    </div>
+                    <div class="bar-comparison">
+                        <div class="bar-label">DL</div>
+                        <div class="bar-visual dl-bar" style="width: 20%;">Automatic</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Use Cases -->
+        <div class="use-cases">
+            <div class="use-case-card" style="border-top: 5px solid #3498db;">
+                <h3 class="use-case-title">
+                    <i class="fas fa-brain" style="color: #3498db;"></i>
+                    Machine Learning Use Cases
+                </h3>
+                <div class="use-case-grid">
+                    <div class="use-case-item">
+                        <i class="fas fa-chart-line" style="color: #3498db;"></i>
+                        <span>Stock Prediction</span>
+                    </div>
+                    <div class="use-case-item">
+                        <i class="fas fa-envelope" style="color: #3498db;"></i>
+                        <span>Spam Detection</span>
+                    </div>
+                    <div class="use-case-item">
+                        <i class="fas fa-heartbeat" style="color: #3498db;"></i>
+                        <span>Disease Diagnosis</span>
+                    </div>
+                    <div class="use-case-item">
+                        <i class="fas fa-credit-card" style="color: #3498db;"></i>
+                        <span>Credit Scoring</span>
+                    </div>
+                    <div class="use-case-item">
+                        <i class="fas fa-users" style="color: #3498db;"></i>
+                        <span>Segmentation</span>
+                    </div>
+                    <div class="use-case-item">
+                        <i class="fas fa-exclamation-triangle" style="color: #3498db;"></i>
+                        <span>Fraud Detection</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="use-case-card" style="border-top: 5px solid #e74c3c;">
+                <h3 class="use-case-title">
+                    <i class="fas fa-network-wired" style="color: #e74c3c;"></i>
+                    Deep Learning Use Cases
+                </h3>
+                <div class="use-case-grid">
+                    <div class="use-case-item">
+                        <i class="fas fa-image" style="color: #e74c3c;"></i>
+                        <span>Image Recognition</span>
+                    </div>
+                    <div class="use-case-item">
+                        <i class="fas fa-car" style="color: #e74c3c;"></i>
+                        <span>Self-Driving Cars</span>
+                    </div>
+                    <div class="use-case-item">
+                        <i class="fas fa-language" style="color: #e74c3c;"></i>
+                        <span>Language Processing</span>
+                    </div>
+                    <div class="use-case-item">
+                        <i class="fas fa-video" style="color: #e74c3c;"></i>
+                        <span>Video Analysis</span>
+                    </div>
+                    <div class="use-case-item">
+                        <i class="fas fa-microphone" style="color: #e74c3c;"></i>
+                        <span>Voice Recognition</span>
+                    </div>
+                    <div class="use-case-item">
+                        <i class="fas fa-comments" style="color: #e74c3c;"></i>
+                        <span>Chatbots</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Architecture Visualization -->
+        <div class="architecture-viz">
+            <h2 class="demo-title">
+                <i class="fas fa-project-diagram"></i>
+                Typical Workflow Comparison
+            </h2>
+            <div class="arch-container">
+                <div class="arch-diagram">
+                    <h3 style="color: #3498db; margin-bottom: 20px;">
+                        <i class="fas fa-brain"></i> ML Workflow
+                    </h3>
+                    <div class="flow-step" style="border-left: 4px solid #3498db;">
+                        <i class="fas fa-database"></i> <span>Raw Data</span>
+                    </div>
+                    <div class="flow-arrow">↓</div>
+                    <div class="flow-step" style="border-left: 4px solid #3498db;">
+                        <i class="fas fa-broom"></i> <span>Clean Data</span>
+                    </div>
+                    <div class="flow-arrow">↓</div>
+                    <div class="flow-step" style="border-left: 4px solid #3498db;">
+                        <i class="fas fa-hand-paper"></i> <span>Manual Features</span>
+                    </div>
+                    <div class="flow-arrow">↓</div>
+                    <div class="flow-step" style="border-left: 4px solid #3498db;">
+                        <i class="fas fa-graduation-cap"></i> <span>Train Model</span>
+                    </div>
+                    <div class="flow-arrow">↓</div>
+                    <div class="flow-step" style="border-left: 4px solid #3498db;">
+                        <i class="fas fa-rocket"></i> <span>Deploy</span>
+                    </div>
+                </div>
+
+                <div class="arch-diagram">
+                    <h3 style="color: #e74c3c; margin-bottom: 20px;">
+                        <i class="fas fa-network-wired"></i> DL Workflow
+                    </h3>
+                    <div class="flow-step" style="border-left: 4px solid #e74c3c;">
+                        <i class="fas fa-server"></i> <span>Big Raw Data</span>
+                    </div>
+                    <div class="flow-arrow">↓</div>
+                    <div class="flow-step" style="border-left: 4px solid #e74c3c;">
+                        <i class="fas fa-broom"></i> <span>Preprocess</span>
+                    </div>
+                    <div class="flow-arrow">↓</div>
+                    <div class="flow-step" style="border-left: 4px solid #e74c3c;">
+                        <i class="fas fa-layer-group"></i> <span>Design Network</span>
+                    </div>
+                    <div class="flow-arrow">↓</div>
+                    <div class="flow-step" style="border-left: 4px solid #e74c3c;">
+                        <i class="fas fa-robot"></i> <span>Auto Feature Learning</span>
+                    </div>
+                    <div class="flow-arrow">↓</div>
+                    <div class="flow-step" style="border-left: 4px solid #e74c3c;">
+                        <i class="fas fa-bolt"></i> <span>GPU Training</span>
+                    </div>
+                    <div class="flow-arrow">↓</div>
+                    <div class="flow-step" style="border-left: 4px solid #e74c3c;">
+                        <i class="fas fa-rocket"></i> <span>Deploy</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button class="demo-button" onclick="animateWorkflow('ml')">
+                    <i class="fas fa-play"></i>
+                    Animate ML Workflow
+                </button>
+                <button class="demo-button" onclick="animateWorkflow('dl')">
+                    <i class="fas fa-play"></i>
+                    Animate DL Workflow
+                </button>
+                <button class="demo-button" onclick="resetWorkflows()">
+                    <i class="fas fa-redo"></i>
+                    Reset
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="ml_vs_dl_demo.js"></script>
+</body>
+</html>
